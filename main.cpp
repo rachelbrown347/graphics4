@@ -25,21 +25,44 @@
 
 using namespace std;
 
+const float PI = 3.1415926;
+
+// Converts degrees to radians.
+#define degrees_to_radians(angle_degrees) (angle_degrees * PI / 180.0)
+ 
+// Converts radians to degrees.
+#define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
 
-void drawLink(Vector o, Vector e) {
+void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
-    o = o + offset;
-    e = e + offset;
+    origin = origin + offset;
+    end_point = end_point + offset;
 
+	
+	Vector direction = (end_point - origin).norm();
+	Vector up = {0, 1, 0};
+
+	Vector axis_of_rotation = direction.cross(up).norm();
+	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(up))));
+
+	
+	
+	//Transform the MV matrix before drawing the cone
+	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	glutSolidCone(0.1, direction.mag(), 100, 100);
+
+	//Undo the transformation before exiting this function
+	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
-        glVertex3f(o.x, o.y, o.z);
-        glVertex3f(e.x, e.y, e.z);
+        glVertex3f(origin.x, origin.y, origin.z);
+        glVertex3f(end_point.x, end_point.y, end_point.z);
 
         glColor3f(0.0, 0.0, 1.0);
-        Vector crossbarPlus  = o + 0.1 * (e - o) + 0.1 * ((e - o).cross({1, 0, 0})).norm();
-        Vector crossbarMinus = o + 0.1 * (e - o) - 0.1 * ((e - o).cross({1, 0, 0})).norm();
+        Vector crossbarPlus  = origin + 0.1 * (end_point - origin) + 0.1 * ((end_point - origin).cross({1, 0, 0})).norm();
+        Vector crossbarMinus = origin + 0.1 * (end_point - origin) - 0.1 * ((end_point - origin).cross({1, 0, 0})).norm();
         glVertex3f( crossbarPlus.x,  crossbarPlus.y,  crossbarPlus.z);
         glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
     glEnd();
@@ -88,7 +111,7 @@ void renderScene() {
 	GLfloat shnyMat[] = { 50 };
 	GLfloat lightPos[] = {2, 2, 2, 0};
 	GLfloat whiteLight[] = { 1, 1, 1, 1};
-	GLfloat ambLight[] = { 0.51, 0.51, 0.51, 1.0};
+	GLfloat ambLight[] = { 0.2, 0.2, 0.2, 1.0};
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the color buffer
     glEnable(GL_DEPTH_TEST);
@@ -112,15 +135,13 @@ void renderScene() {
 	//set up camera
 	gluLookAt(0, 0, 5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-	glRotatef(45, 1, 1, 0);
-	glutSolidCone(0.1, 0.2, 20, 20);
-	glRotatef(-45, 1, 1, 0);
+
 	
 	
 
-    Link link{1.5, 3.14/6.0, 3.14/6.0, 0};
-    link.child = std::make_shared<Link>(Link{1.5, 3.14/6.0, 3.14/6.0, 0});
-    link.child->child = std::make_shared<Link>(Link{1.5, 3.14/6.0, 3.14/6.0, 0});
+    Link link{1.5, PI/6.0, PI/6.0, 0};
+    link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
+    link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
     link.getVector();
 
     glFlush();

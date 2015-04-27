@@ -3,7 +3,7 @@
 #include <armadillo>
 using namespace arma;
 
-mat buildJacobian(std::vector<Vector> jVectors) {
+mat getPseudoInv(std::vector<Vector> jVectors) {
     int n = jVectors.size;
     mat J(3, n);
 
@@ -11,5 +11,9 @@ mat buildJacobian(std::vector<Vector> jVectors) {
         J.col(i) = jVectors[i];
     }
 
-    return J
+    jT = J.t();
+    jTInv = inv(jT * J);
+    jOut = jTInv * jT;
+
+    return jOut
 }

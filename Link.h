@@ -4,6 +4,7 @@
 
 #include "Vector.h"
 #include "Matrix.h"
+#include "GenMatrix.h"
 
 void drawLink(Vector, Vector);
 
@@ -116,13 +117,8 @@ struct Link {
         return jVectors;
     }
 
-    // std::vector getNewParams(std::vector params) {
-
-
-    //     std::vector newParams;
-    //     for (double p : params) {
-
-    //     }
-    // }
+    std::vector<Vector> getNewParams(std::vector<Vector> jVectors) {
+        
+    }
 };
 

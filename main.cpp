@@ -25,6 +25,8 @@
 
 using namespace std;
 
+
+
 void drawLink(Vector o, Vector e) {
     Vector offset = {0, 0, -10};
     o = o + offset;
@@ -48,7 +50,7 @@ void drawLink(Vector o, Vector e) {
 
 void asciiInput(unsigned char key, int x, int y) {
     switch(key) {
-    case 32:
+    case 32: //space
         exit(0);
     }
 }
@@ -71,13 +73,50 @@ void reshapeWindow(int w, int h) {
     glMatrixMode(GL_MODELVIEW);
 }
 
+void updateScene()
+{
+
+	glutPostRedisplay();
+	
+}
+
 // function that does the actual drawing of stuff
 void renderScene() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the color buffer
-    
+	
+	//Define Colors
+	GLfloat specMat[] = {1,1,1,1};
+	GLfloat shnyMat[] = { 50 };
+	GLfloat lightPos[] = {2, 2, 2, 0};
+	GLfloat whiteLight[] = { 1, 1, 1, 1};
+	GLfloat ambLight[] = { 0.51, 0.51, 0.51, 1.0};
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the color buffer
+    glEnable(GL_DEPTH_TEST);
+
+	//Define Materials
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specMat);
+	glMaterialfv(GL_FRONT, GL_SHININESS, shnyMat);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, whiteLight);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	
     glClearColor (0.0, 0.0, 0.0, 0.0);
+	
     glMatrixMode(GL_MODELVIEW);           // indicate we are specifying camera transformations
     glLoadIdentity();                     // make sure transformation is "zero'd"
+
+	//set up camera
+	gluLookAt(0, 0, 5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	glRotatef(45, 1, 1, 0);
+	glutSolidCone(0.1, 0.2, 20, 20);
+	glRotatef(-45, 1, 1, 0);
+	
+	
 
     Link link{1.5, 3.14/6.0, 3.14/6.0, 0};
     link.child = std::make_shared<Link>(Link{1.5, 3.14/6.0, 3.14/6.0, 0});
@@ -106,7 +145,7 @@ int main(int argc, char* argv[])
     glutReshapeFunc(reshapeWindow);
     glutKeyboardFunc(asciiInput);
 
-    glutIdleFunc(renderScene);
+    glutIdleFunc(updateScene);
     // enable depth testing
     glEnable(GL_DEPTH_TEST);
 

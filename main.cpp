@@ -2,6 +2,7 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <memory>
 #include <vector>
 
 #ifdef _WIN32
@@ -78,7 +79,9 @@ void renderScene() {
     glMatrixMode(GL_MODELVIEW);           // indicate we are specifying camera transformations
     glLoadIdentity();                     // make sure transformation is "zero'd"
 
-    Link link{1, 3.14/6.0, 3.14/6.0, 0};
+    Link link{1.5, 3.14/6.0, 3.14/6.0, 0};
+    link.child = std::make_shared<Link>(Link{1.5, 3.14/6.0, 3.14/6.0, 0});
+    link.child->child = std::make_shared<Link>(Link{1.5, 3.14/6.0, 3.14/6.0, 0});
     link.getVector();
 
     glFlush();

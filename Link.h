@@ -116,7 +116,7 @@ struct Link {
         }
         return jVectors;
     }
-
+    
     // std::vector<Vector> getNewParams(std::vector<Vector> jVectors) {
         
     // }

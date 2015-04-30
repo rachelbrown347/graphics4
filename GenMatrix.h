@@ -19,3 +19,4 @@ mat getPseudoInv(std::vector<Vector> jVectors) {
 
     return jOut;
 }
+

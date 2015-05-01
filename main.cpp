@@ -33,7 +33,7 @@
 
 
 using namespace std;
-using namespace glm;
+
 
 
 const float PI = 3.1415926;
@@ -48,14 +48,14 @@ const int PALETTE_SIZE = 8;
 const int COLOR_SCALE = 10;
 
 
-const vec3 COLOR_PALETTE[PALETTE_SIZE] = { vec3(142.0f, 211.0f, 199.0f), //Teal
-										   vec3(255.0f, 255.0f, 255.0f), //Yellow
-										   vec3(190.0f, 186.0f, 218.0f), //Purple
-										   vec3(251.0f, 128.0f, 114.0f), //Salmon Red
-										   vec3(128.0f, 177.0f, 211.0f), //Powder Blue
-										   vec3(253.0f, 180.0f, 98.0f),  //Orange
-										   vec3(179.0f, 222.0f, 105.0f), //Lime Green
-										   vec3(252.0f, 205.0f, 229.0f)};//Bubblegum Pink
+const glm::vec3 COLOR_PALETTE[PALETTE_SIZE] = { glm::vec3(142.0f, 211.0f, 199.0f), //Teal
+										   glm::vec3(255.0f, 255.0f, 255.0f), //Yellow
+										   glm::vec3(190.0f, 186.0f, 218.0f), //Purple
+										   glm::vec3(251.0f, 128.0f, 114.0f), //Salmon Red
+										   glm::vec3(128.0f, 177.0f, 211.0f), //Powder Blue
+										   glm::vec3(253.0f, 180.0f, 98.0f),  //Orange
+										   glm::vec3(179.0f, 222.0f, 105.0f), //Lime Green
+										   glm::vec3(252.0f, 205.0f, 229.0f)};//Bubblegum Pink
 
 
 

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include "Camera.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -23,7 +24,17 @@
 #include "Matrix.h"
 #include "Link.h"
 
+#include "glm/glm/glm.hpp"
+#include "glm/glm/gtx/transform.hpp"
+#include "glm/glm/gtc/quaternion.hpp"
+#include "glm/glm/gtx/quaternion.hpp"
+#include "glm/glm/gtc/matrix_transform.hpp"
+#include "glm/glm/gtc/type_ptr.hpp"
+
+
 using namespace std;
+using namespace glm;
+
 
 const float PI = 3.1415926;
 
@@ -33,6 +44,20 @@ const float PI = 3.1415926;
 // Converts radians to degrees.
 #define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
+const int PALETTE_SIZE = 8;
+const int COLOR_SCALE = 10;
+
+
+const vec3 COLOR_PALETTE[PALETTE_SIZE] = { vec3(142.0f, 211.0f, 199.0f), //Teal
+										   vec3(255.0f, 255.0f, 255.0f), //Yellow
+										   vec3(190.0f, 186.0f, 218.0f), //Purple
+										   vec3(251.0f, 128.0f, 114.0f), //Salmon Red
+										   vec3(128.0f, 177.0f, 211.0f), //Powder Blue
+										   vec3(253.0f, 180.0f, 98.0f),  //Orange
+										   vec3(179.0f, 222.0f, 105.0f), //Lime Green
+										   vec3(252.0f, 205.0f, 229.0f)};//Bubblegum Pink
+
+
 
 void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
@@ -41,19 +66,40 @@ void drawLink(Vector origin, Vector end_point) {
 
 	
 	Vector direction = (end_point - origin).norm();
-	Vector up = {0, 1, 0};
+	Vector forward = {0, 0, 1};
 
-	Vector axis_of_rotation = direction.cross(up).norm();
-	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(up))));
+	Vector axis_of_rotation = direction.cross(forward).norm();
+	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 
+	float const base_diameter = 0.1f;
+	float const stack_count = 100;
+	float const slice_count = 100;
+
+	//Set color based on distance from the origin
+	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
+	cout << color_index;
 	
+
 	
 	//Transform the MV matrix before drawing the cone
+	//TRANSLATE FIRST!!!
+	glTranslatef(origin.x, origin.y, origin.z);
 	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	glutSolidCone(0.1, direction.mag(), 100, 100);
 
+	cout << "red = " << COLOR_PALETTE[color_index].r << endl;
+	cout << "green  = " << COLOR_PALETTE[color_index].b << endl;
+	cout << "blue = " << COLOR_PALETTE[color_index].g << endl;
+	
+
+	// Need to switch to the materialfv style of defining colors.
+	glColor3f(COLOR_PALETTE[color_index].r, COLOR_PALETTE[color_index].g, COLOR_PALETTE[color_index].b);
+	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
+	glutSolidSphere(base_diameter, stack_count, slice_count);
 	//Undo the transformation before exiting this function
+	//Transformations must be in REVERSE ORDER
 	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	glTranslatef(-origin.x, -origin.y, -origin.z);
+	
 	
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
@@ -75,7 +121,48 @@ void asciiInput(unsigned char key, int x, int y) {
     switch(key) {
     case 32: //space
         exit(0);
+		break;
+
     }
+
+
+}
+
+
+void specialKeyFunc(int key, int x, int y)
+{
+
+	switch(key)
+	{
+
+	//camera controls
+	case GLUT_KEY_UP:
+		
+		break;
+		
+	case GLUT_KEY_DOWN:
+		
+		break;
+
+	case GLUT_KEY_RIGHT:
+		
+		break;
+
+	case GLUT_KEY_LEFT:
+		
+		break;
+
+	case GLUT_KEY_PAGE_UP:
+		
+		break;
+
+	case GLUT_KEY_PAGE_DOWN:
+		
+		break;
+
+	}
+	
+
 }
 
 void reshapeWindow(int w, int h) {
@@ -133,7 +220,9 @@ void renderScene() {
     glLoadIdentity();                     // make sure transformation is "zero'd"
 
 	//set up camera
-	gluLookAt(0, 0, 5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	// xyz position, xyz lookat, xyz up
+	gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
+	
 
 
 	
@@ -146,6 +235,15 @@ void renderScene() {
 
     glFlush();
     glutSwapBuffers();                    // swap buffers (we earlier set double buffer)
+}
+
+void CallBackMouseFunc(int button, int state, int x, int y)
+{
+
+}
+void CallBackMotionFunc(int x, int y)
+{
+
 }
 
 int main(int argc, char* argv[])
@@ -165,6 +263,9 @@ int main(int argc, char* argv[])
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshapeWindow);
     glutKeyboardFunc(asciiInput);
+	glutMouseFunc(CallBackMouseFunc);
+	glutMotionFunc(CallBackMotionFunc);
+	glutSpecialFunc(specialKeyFunc);
 
     glutIdleFunc(updateScene);
     // enable depth testing
@@ -175,3 +276,10 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
+
+
+
+
+
+

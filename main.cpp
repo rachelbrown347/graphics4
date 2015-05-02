@@ -47,17 +47,53 @@ const float PI = 3.1415926;
 const int PALETTE_SIZE = 8;
 const int COLOR_SCALE = 10;
 
-
-const glm::vec3 COLOR_PALETTE[PALETTE_SIZE] = { glm::vec3(142.0f, 211.0f, 199.0f), //Teal
-										   glm::vec3(255.0f, 255.0f, 255.0f), //Yellow
-										   glm::vec3(190.0f, 186.0f, 218.0f), //Purple
-										   glm::vec3(251.0f, 128.0f, 114.0f), //Salmon Red
-										   glm::vec3(128.0f, 177.0f, 211.0f), //Powder Blue
-										   glm::vec3(253.0f, 180.0f, 98.0f),  //Orange
-										   glm::vec3(179.0f, 222.0f, 105.0f), //Lime Green
-										   glm::vec3(252.0f, 205.0f, 229.0f)};//Bubblegum Pink
+float GOAL_THETA = 0.0f;
+glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
+
+
+
+float COLOR_PALETTE[PALETTE_SIZE][4] = { {0.557f, 0.83f, 0.78f, 1.0f}, //Teal
+											   {1.0f, 1.0f, 0.0f, 1.0f}, //Yellow
+											   {0.75f, 0.73f, 0.85f, 1.0f}, //Purple
+											   {0.984f, 0.5f, 0.447f, 1.0f}, //Salmon Red
+											   {0.5f, 0.694f, 0.827f, 1.0f}, //Powder Blue
+											   {0.992f, 0.706f, 0.384f, 1.0f},  //Orange
+											   {0.702f, 0.871f, 0.412f, 1.0f}, //Lime Green
+											   {0.988f, 0.804f, 0.898f, 1.0f}};//Bubblegum Pink
+
+
+void updateGoal()
+{
+	GOAL_THETA += 0.1f;
+	if (GOAL_THETA >= 360.0f)
+	{
+		GOAL_THETA = 0.0f;
+	}
+}
+
+
+void drawGoal()
+{
+	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
+	float offset = 0.5f;
+	
+
+
+	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
+	glTranslatef( offset, 0.0f ,0.0f );	
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
+	glutSolidSphere(0.01, 100, 100);
+
+
+	glTranslatef( -offset, 0.0f ,0.0f );
+	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
+	glTranslatef(-GOAL_CENTROID.x, -GOAL_CENTROID.y, -GOAL_CENTROID.z);
+
+}
 
 void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
@@ -77,7 +113,6 @@ void drawLink(Vector origin, Vector end_point) {
 
 	//Set color based on distance from the origin
 	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
-	cout << color_index;
 	
 
 	
@@ -86,13 +121,10 @@ void drawLink(Vector origin, Vector end_point) {
 	glTranslatef(origin.x, origin.y, origin.z);
 	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 
-	cout << "red = " << COLOR_PALETTE[color_index].r << endl;
-	cout << "green  = " << COLOR_PALETTE[color_index].b << endl;
-	cout << "blue = " << COLOR_PALETTE[color_index].g << endl;
-	
 
 	// Need to switch to the materialfv style of defining colors.
-	glColor3f(COLOR_PALETTE[color_index].r, COLOR_PALETTE[color_index].g, COLOR_PALETTE[color_index].b);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
 	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
 	glutSolidSphere(base_diameter, stack_count, slice_count);
 	//Undo the transformation before exiting this function
@@ -185,7 +217,8 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
-
+	updateGoal();
+	
 	glutPostRedisplay();
 	
 }
@@ -227,7 +260,8 @@ void renderScene() {
 
 	
 	
-
+	drawGoal();
+	
     Link link{1.5, PI/6.0, PI/6.0, 0};
     link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
     link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});

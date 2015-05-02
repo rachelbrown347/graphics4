@@ -4,7 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
-#include "Camera.h"
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,6 +50,17 @@ const int COLOR_SCALE = 10;
 float GOAL_THETA = 0.0f;
 glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
 
+struct Camera
+{
+	float theta = 0.0f;
+	float phi = 0.0f;
+	float dist = 5.0f;
+};
+
+Camera CAMERA;
+
+
+
 
 
 
@@ -71,6 +82,26 @@ void updateGoal()
 	{
 		GOAL_THETA = 0.0f;
 	}
+}
+
+glm::vec3 getCameraPos()
+{
+	glm::vec4 start = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+
+	glm::mat4 rotations = glm::mat4();
+	rotations = glm::rotate(rotations, (glm::mediump_float)CAMERA.theta, glm::vec3(0.0f, 1.0f, 0.0f));
+	
+	rotations = glm::rotate(rotations, (glm::mediump_float)CAMERA.phi, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	glm::vec4 out = rotations * start;
+	out /= out.w;
+	
+	return glm::vec3(out);
+	
+	
+	
+	
+	
 }
 
 
@@ -163,33 +194,46 @@ void asciiInput(unsigned char key, int x, int y) {
 
 void specialKeyFunc(int key, int x, int y)
 {
+	float cam_scale = 0.1f;
+	float max_dist = 10.0f;
+	float min_dist = 0.1f;
+	
+	
 
 	switch(key)
 	{
 
 	//camera controls
 	case GLUT_KEY_UP:
-		
+		CAMERA.phi = min(89.0f, CAMERA.phi + cam_scale);
 		break;
 		
 	case GLUT_KEY_DOWN:
-		
+		CAMERA.phi = max(-89.0f, CAMERA.phi - cam_scale);
 		break;
 
 	case GLUT_KEY_RIGHT:
-		
+		CAMERA.theta = CAMERA.phi + cam_scale;
+		if(CAMERA.theta >= 360)
+		{
+			CAMERA.theta -= 360;
+		}
 		break;
 
 	case GLUT_KEY_LEFT:
-		
+		CAMERA.theta = CAMERA.phi - cam_scale;
+		if(CAMERA.theta < 0)
+		{
+			CAMERA.theta += 360;
+		}		
 		break;
 
 	case GLUT_KEY_PAGE_UP:
-		
+		CAMERA.dist = max(CAMERA.dist - cam_scale, min_dist);
 		break;
 
 	case GLUT_KEY_PAGE_DOWN:
-		
+		CAMERA.dist = min(CAMERA.dist - cam_scale, max_dist);
 		break;
 
 	}
@@ -254,7 +298,9 @@ void renderScene() {
 
 	//set up camera
 	// xyz position, xyz lookat, xyz up
-	gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
+	glm::vec3 cam = getCameraPos();
+	
+	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
 	
 
 

@@ -36,7 +36,7 @@ using namespace std;
 
 
 
-const float PI = 3.1415926;
+// const float PI = 3.1415926;
 
 // Converts degrees to radians.
 #define degrees_to_radians(angle_degrees) (angle_degrees * PI / 180.0)
@@ -45,7 +45,7 @@ const float PI = 3.1415926;
 #define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
 const int PALETTE_SIZE = 8;
-const int COLOR_SCALE = 10;
+// const int COLOR_SCALE = 10;
 
 
 const glm::vec3 COLOR_PALETTE[PALETTE_SIZE] = { glm::vec3(142.0f, 211.0f, 199.0f), //Teal
@@ -65,40 +65,40 @@ void drawLink(Vector origin, Vector end_point) {
     end_point = end_point + offset;
 
 	
-	Vector direction = (end_point - origin).norm();
-	Vector forward = {0, 0, 1};
+	// Vector direction = (end_point - origin).norm();
+	// Vector forward = {0, 0, 1};
 
-	Vector axis_of_rotation = direction.cross(forward).norm();
-	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
+	// Vector axis_of_rotation = direction.cross(forward).norm();
+	// float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 
-	float const base_diameter = 0.1f;
-	float const stack_count = 100;
-	float const slice_count = 100;
+	// float const base_diameter = 0.1f;
+	// float const stack_count = 100;
+	// float const slice_count = 100;
 
-	//Set color based on distance from the origin
-	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
-	cout << color_index;
+	// //Set color based on distance from the origin
+	// size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
+	// //cout << color_index;
 	
 
 	
-	//Transform the MV matrix before drawing the cone
-	//TRANSLATE FIRST!!!
-	glTranslatef(origin.x, origin.y, origin.z);
-	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	// //Transform the MV matrix before drawing the cone
+	// //TRANSLATE FIRST!!!
+	// glTranslatef(origin.x, origin.y, origin.z);
+	// glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 
-	cout << "red = " << COLOR_PALETTE[color_index].r << endl;
-	cout << "green  = " << COLOR_PALETTE[color_index].b << endl;
-	cout << "blue = " << COLOR_PALETTE[color_index].g << endl;
+	// //cout << "red = " << COLOR_PALETTE[color_index].r << endl;
+	// //cout << "green  = " << COLOR_PALETTE[color_index].b << endl;
+	// //cout << "blue = " << COLOR_PALETTE[color_index].g << endl;
 	
 
-	// Need to switch to the materialfv style of defining colors.
-	glColor3f(COLOR_PALETTE[color_index].r, COLOR_PALETTE[color_index].g, COLOR_PALETTE[color_index].b);
-	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
-	glutSolidSphere(base_diameter, stack_count, slice_count);
-	//Undo the transformation before exiting this function
-	//Transformations must be in REVERSE ORDER
-	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	glTranslatef(-origin.x, -origin.y, -origin.z);
+	// // Need to switch to the materialfv style of defining colors.
+	// glColor3f(COLOR_PALETTE[color_index].r, COLOR_PALETTE[color_index].g, COLOR_PALETTE[color_index].b);
+	// glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
+	// glutSolidSphere(base_diameter, stack_count, slice_count);
+	// //Undo the transformation before exiting this function
+	// //Transformations must be in REVERSE ORDER
+	// glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	// glTranslatef(-origin.x, -origin.y, -origin.z);
 	
 	
     glBegin(GL_LINES);
@@ -107,8 +107,8 @@ void drawLink(Vector origin, Vector end_point) {
         glVertex3f(end_point.x, end_point.y, end_point.z);
 
         glColor3f(0.0, 0.0, 1.0);
-        Vector crossbarPlus  = origin + 0.1 * (end_point - origin) + 0.1 * ((end_point - origin).cross({1, 0, 0})).norm();
-        Vector crossbarMinus = origin + 0.1 * (end_point - origin) - 0.1 * ((end_point - origin).cross({1, 0, 0})).norm();
+        Vector crossbarPlus  = origin + 0.1 * (end_point - origin) + 0.1 * ((end_point - origin).cross({0, 1, 0})).norm();
+        Vector crossbarMinus = origin + 0.1 * (end_point - origin) - 0.1 * ((end_point - origin).cross({0, 1, 0})).norm();
         glVertex3f( crossbarPlus.x,  crossbarPlus.y,  crossbarPlus.z);
         glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
     glEnd();
@@ -226,11 +226,13 @@ void renderScene() {
 
 
 	
-	
+	Link link{2.0, {1, 1, 1, 0}, 0};
+    link.child = std::make_shared<Link>(Link{1.5, {1, 0, 1, 0}, 0});
+    link.child->child = std::make_shared<Link>(Link{1, {1, 1, 0, 0}, 0});
 
-    Link link{1.5, PI/6.0, PI/6.0, 0};
-    link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
-    link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
+    // Link link{1.5, PI/6.0, PI/6.0, 0};
+    // link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
+    // link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
     link.getVector();
 
     glFlush();

@@ -10,11 +10,11 @@ else
 	LDFLAGS = -lglut -lGLU
 endif
 
-AFLAGS = -O2 -I ./armadillo-5.000.1/include -DARMA_DONT_USE_WRAPPER -framework Accelerate
+AFLAGS = -I ./armadillo-5.000.1/include -DARMA_DONT_USE_WRAPPER -framework Accelerate
 	
 RM = /bin/rm -f 
 all: main 
 main: clean main.cpp
-	$(CC) $(CFLAGS) $(AFLAGS) main.cpp -o main $(LDFLAGS)
+	$(CC) $(CFLAGS) $(AFLAGS) -O0  main.cpp -o main $(LDFLAGS)
 clean: 
 	$(RM) *.o main

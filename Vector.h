@@ -77,6 +77,7 @@ struct Vector {
 	}
 
 	Vector norm() const {
+		assert(this->mag() != 0);
 		return *this / this->mag();
 	}
 

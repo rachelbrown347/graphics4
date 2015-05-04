@@ -4,7 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
-#include "Camera.h"
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,7 +36,7 @@ using namespace std;
 
 
 
-// const float PI = 3.1415926;
+const float PI = 3.1415926;
 
 // Converts degrees to radians.
 #define degrees_to_radians(angle_degrees) (angle_degrees * PI / 180.0)
@@ -45,19 +45,86 @@ using namespace std;
 #define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
 const int PALETTE_SIZE = 8;
-// const int COLOR_SCALE = 10;
+const int COLOR_SCALE = 10;
+
+float GOAL_THETA = 0.0f;
+glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
+
+struct Camera
+{
+	float theta = 0.0f;
+	float phi = 0.0f;
+	float dist = 5.0f;
+};
+
+Camera CAMERA;
 
 
-const glm::vec3 COLOR_PALETTE[PALETTE_SIZE] = { glm::vec3(142.0f, 211.0f, 199.0f), //Teal
-										   glm::vec3(255.0f, 255.0f, 255.0f), //Yellow
-										   glm::vec3(190.0f, 186.0f, 218.0f), //Purple
-										   glm::vec3(251.0f, 128.0f, 114.0f), //Salmon Red
-										   glm::vec3(128.0f, 177.0f, 211.0f), //Powder Blue
-										   glm::vec3(253.0f, 180.0f, 98.0f),  //Orange
-										   glm::vec3(179.0f, 222.0f, 105.0f), //Lime Green
-										   glm::vec3(252.0f, 205.0f, 229.0f)};//Bubblegum Pink
 
 
+
+
+
+float COLOR_PALETTE[PALETTE_SIZE][4] = { {0.557f, 0.83f, 0.78f, 1.0f}, //Teal
+											   {1.0f, 1.0f, 0.0f, 1.0f}, //Yellow
+											   {0.75f, 0.73f, 0.85f, 1.0f}, //Purple
+											   {0.984f, 0.5f, 0.447f, 1.0f}, //Salmon Red
+											   {0.5f, 0.694f, 0.827f, 1.0f}, //Powder Blue
+											   {0.992f, 0.706f, 0.384f, 1.0f},  //Orange
+											   {0.702f, 0.871f, 0.412f, 1.0f}, //Lime Green
+											   {0.988f, 0.804f, 0.898f, 1.0f}};//Bubblegum Pink
+
+
+void updateGoal()
+{
+	GOAL_THETA += 0.1f;
+	if (GOAL_THETA >= 360.0f)
+	{
+		GOAL_THETA = 0.0f;
+	}
+}
+
+glm::vec3 getCameraPos()
+{
+	glm::vec4 start = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+
+	glm::mat4 rotations = glm::mat4();
+	rotations = glm::rotate(rotations, (glm::mediump_float)CAMERA.theta, glm::vec3(0.0f, 1.0f, 0.0f));
+	
+	rotations = glm::rotate(rotations, (glm::mediump_float)CAMERA.phi, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	glm::vec4 out = rotations * start;
+	out /= out.w;
+	
+	return glm::vec3(out);
+	
+	
+	
+	
+	
+}
+
+
+void drawGoal()
+{
+	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
+	float offset = 0.5f;
+	
+
+
+	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
+	glTranslatef( offset, 0.0f ,0.0f );	
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
+	glutSolidSphere(0.01, 100, 100);
+
+
+	glTranslatef( -offset, 0.0f ,0.0f );
+	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
+	glTranslatef(-GOAL_CENTROID.x, -GOAL_CENTROID.y, -GOAL_CENTROID.z);
+
+}
 
 void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
@@ -65,41 +132,33 @@ void drawLink(Vector origin, Vector end_point) {
     end_point = end_point + offset;
 
 	
-	// Vector direction = (end_point - origin).norm();
-	// Vector forward = {0, 0, 1};
+	Vector direction = (end_point - origin).norm();
+	Vector forward = {0, 0, 1};
 
-	// Vector axis_of_rotation = direction.cross(forward).norm();
-	// float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
+	Vector axis_of_rotation = direction.cross(forward).norm();
+	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 
-	// float const base_diameter = 0.1f;
-	// float const stack_count = 100;
-	// float const slice_count = 100;
+	float const base_diameter = 0.1f;
+	float const stack_count = 100;
+	float const slice_count = 100;
 
-	// //Set color based on distance from the origin
-	// size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
-	// //cout << color_index;
+	//Set color based on distance from the origin
+	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
 	
+	//Transform the MV matrix before drawing the cone
+	//TRANSLATE FIRST!!!
+	glTranslatef(origin.x, origin.y, origin.z);
+	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 
-	
-	// //Transform the MV matrix before drawing the cone
-	// //TRANSLATE FIRST!!!
-	// glTranslatef(origin.x, origin.y, origin.z);
-	// glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-
-	// //cout << "red = " << COLOR_PALETTE[color_index].r << endl;
-	// //cout << "green  = " << COLOR_PALETTE[color_index].b << endl;
-	// //cout << "blue = " << COLOR_PALETTE[color_index].g << endl;
-	
-
-	// // Need to switch to the materialfv style of defining colors.
-	// glColor3f(COLOR_PALETTE[color_index].r, COLOR_PALETTE[color_index].g, COLOR_PALETTE[color_index].b);
-	// glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
-	// glutSolidSphere(base_diameter, stack_count, slice_count);
-	// //Undo the transformation before exiting this function
-	// //Transformations must be in REVERSE ORDER
-	// glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	// glTranslatef(-origin.x, -origin.y, -origin.z);
-	
+	// Need to switch to the materialfv style of defining colors.
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
+	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
+	glutSolidSphere(base_diameter, stack_count, slice_count);
+	//Undo the transformation before exiting this function
+	//Transformations must be in REVERSE ORDER
+	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	glTranslatef(-origin.x, -origin.y, -origin.z);
 	
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
@@ -131,33 +190,46 @@ void asciiInput(unsigned char key, int x, int y) {
 
 void specialKeyFunc(int key, int x, int y)
 {
+	float cam_scale = 0.1f;
+	float max_dist = 10.0f;
+	float min_dist = 0.1f;
+	
+	
 
 	switch(key)
 	{
 
 	//camera controls
 	case GLUT_KEY_UP:
-		
+		CAMERA.phi = min(89.0f, CAMERA.phi + cam_scale);
 		break;
 		
 	case GLUT_KEY_DOWN:
-		
+		CAMERA.phi = max(-89.0f, CAMERA.phi - cam_scale);
 		break;
 
 	case GLUT_KEY_RIGHT:
-		
+		CAMERA.theta = CAMERA.phi + cam_scale;
+		if(CAMERA.theta >= 360)
+		{
+			CAMERA.theta -= 360;
+		}
 		break;
 
 	case GLUT_KEY_LEFT:
-		
+		CAMERA.theta = CAMERA.phi - cam_scale;
+		if(CAMERA.theta < 0)
+		{
+			CAMERA.theta += 360;
+		}		
 		break;
 
 	case GLUT_KEY_PAGE_UP:
-		
+		CAMERA.dist = max(CAMERA.dist - cam_scale, min_dist);
 		break;
 
 	case GLUT_KEY_PAGE_DOWN:
-		
+		CAMERA.dist = min(CAMERA.dist - cam_scale, max_dist);
 		break;
 
 	}
@@ -185,7 +257,8 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
-
+	updateGoal();
+	
 	glutPostRedisplay();
 	
 }
@@ -221,11 +294,12 @@ void renderScene() {
 
 	//set up camera
 	// xyz position, xyz lookat, xyz up
-	gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
+	glm::vec3 cam = getCameraPos();
 	
+	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
 
+    drawGoal();
 
-	
 	Link link{2.0, {1, 1, 1, 0}, 0};
     link.child = std::make_shared<Link>(Link{1.5, {1, 0, 1, 0}, 0});
     link.child->child = std::make_shared<Link>(Link{1, {1, 1, 0, 0}, 0});
@@ -233,6 +307,7 @@ void renderScene() {
     // Link link{1.5, PI/6.0, PI/6.0, 0};
     // link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
     // link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
+
     link.getVector();
 
     glFlush();

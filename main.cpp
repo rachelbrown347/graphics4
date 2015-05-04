@@ -34,8 +34,6 @@
 
 using namespace std;
 
-
-
 const float PI = 3.1415926;
 
 // Converts degrees to radians.
@@ -58,12 +56,6 @@ struct Camera
 };
 
 Camera CAMERA;
-
-
-
-
-
-
 
 float COLOR_PALETTE[PALETTE_SIZE][4] = { {0.557f, 0.83f, 0.78f, 1.0f}, //Teal
 											   {1.0f, 1.0f, 0.0f, 1.0f}, //Yellow
@@ -98,10 +90,6 @@ glm::vec3 getCameraPos()
 	
 	return glm::vec3(out);
 	
-	
-	
-	
-	
 }
 
 
@@ -109,8 +97,6 @@ void drawGoal()
 {
 	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
 	float offset = 0.5f;
-	
-
 
 	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
 	glTranslatef( offset, 0.0f ,0.0f );	
@@ -118,7 +104,6 @@ void drawGoal()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
 	glutSolidSphere(0.01, 100, 100);
-
 
 	glTranslatef( -offset, 0.0f ,0.0f );
 	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
@@ -130,7 +115,6 @@ void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
     origin = origin + offset;
     end_point = end_point + offset;
-
 	
 	Vector direction = (end_point - origin).norm();
 	Vector forward = {0, 0, 1};
@@ -181,10 +165,7 @@ void asciiInput(unsigned char key, int x, int y) {
     case 32: //space
         exit(0);
 		break;
-
     }
-
-
 }
 
 
@@ -194,8 +175,6 @@ void specialKeyFunc(int key, int x, int y)
 	float max_dist = 10.0f;
 	float min_dist = 0.1f;
 	
-	
-
 	switch(key)
 	{
 
@@ -231,10 +210,7 @@ void specialKeyFunc(int key, int x, int y)
 	case GLUT_KEY_PAGE_DOWN:
 		CAMERA.dist = min(CAMERA.dist - cam_scale, max_dist);
 		break;
-
 	}
-	
-
 }
 
 void reshapeWindow(int w, int h) {
@@ -258,9 +234,7 @@ void reshapeWindow(int w, int h) {
 void updateScene()
 {
 	updateGoal();
-	
 	glutPostRedisplay();
-	
 }
 
 // function that does the actual drawing of stuff
@@ -285,7 +259,6 @@ void renderScene() {
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-
 	
     glClearColor (0.0, 0.0, 0.0, 0.0);
 	
@@ -297,7 +270,6 @@ void renderScene() {
 	glm::vec3 cam = getCameraPos();
 	
 	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
-
     drawGoal();
 
 	Link link{2.0, {1, 1, 1, 0}, 0};

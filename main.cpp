@@ -31,10 +31,8 @@
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtc/type_ptr.hpp"
 
-
 using namespace std;
 
-const float PI = 3.1415926;
 
 // Converts degrees to radians.
 #define degrees_to_radians(angle_degrees) (angle_degrees * PI / 180.0)
@@ -43,7 +41,6 @@ const float PI = 3.1415926;
 #define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
 const int PALETTE_SIZE = 8;
-const int COLOR_SCALE = 10;
 
 float GOAL_THETA = 0.0f;
 glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -111,49 +108,63 @@ void drawGoal()
 
 }
 
+void myVertex3f (Vector p) {
+    Vector offset = {0, 0, -20};
+    p = p + offset;
+    glVertex3f(p.x, p.y, p.z);
+}
+
 void drawLink(Vector origin, Vector end_point) {
-    Vector offset = {0, 0, -10};
-    origin = origin + offset;
-    end_point = end_point + offset;
+    // const float PI = 3.1415926;
+    // const int COLOR_SCALE = 10;
 	
-	Vector direction = (end_point - origin).norm();
-	Vector forward = {0, 0, 1};
+	// Vector direction = (end_point - origin).norm();
+	// Vector forward = {0, 0, 1};
 
-	Vector axis_of_rotation = direction.cross(forward).norm();
-	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
+	// Vector axis_of_rotation = direction.cross(forward).norm();
+	// float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 
-	float const base_diameter = 0.1f;
-	float const stack_count = 100;
-	float const slice_count = 100;
+	// float const base_diameter = 0.1f;
+	// float const stack_count = 100;
+	// float const slice_count = 100;
 
-	//Set color based on distance from the origin
-	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
+	// //Set color based on distance from the origin
+	// size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
 	
-	//Transform the MV matrix before drawing the cone
-	//TRANSLATE FIRST!!!
-	glTranslatef(origin.x, origin.y, origin.z);
-	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	// //Transform the MV matrix before drawing the cone
+	// //TRANSLATE FIRST!!!
+	// glTranslatef(origin.x, origin.y, origin.z);
+	// glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 
-	// Need to switch to the materialfv style of defining colors.
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
-	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
-	glutSolidSphere(base_diameter, stack_count, slice_count);
-	//Undo the transformation before exiting this function
-	//Transformations must be in REVERSE ORDER
-	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	glTranslatef(-origin.x, -origin.y, -origin.z);
+	// // Need to switch to the materialfv style of defining colors.
+	// glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
+	// glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
+	// glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
+	// glutSolidSphere(base_diameter, stack_count, slice_count);
+	// //Undo the transformation before exiting this function
+	// //Transformations must be in REVERSE ORDER
+	// glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+	// glTranslatef(-origin.x, -origin.y, -origin.z);
 	
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
-        glVertex3f(origin.x, origin.y, origin.z);
-        glVertex3f(end_point.x, end_point.y, end_point.z);
+        myVertex3f(origin);
+        myVertex3f(end_point);
 
         glColor3f(0.0, 0.0, 1.0);
-        Vector crossbarPlus  = origin + 0.1 * (end_point - origin) + 0.1 * ((end_point - origin).cross({0, 1, 0})).norm();
-        Vector crossbarMinus = origin + 0.1 * (end_point - origin) - 0.1 * ((end_point - origin).cross({0, 1, 0})).norm();
-        glVertex3f( crossbarPlus.x,  crossbarPlus.y,  crossbarPlus.z);
-        glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
+        Vector crossbarPlus  = origin + 0.2 * (end_point - origin) + 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
+        Vector crossbarMinus = origin + 0.2 * (end_point - origin) - 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
+        myVertex3f(crossbarPlus);
+        myVertex3f(crossbarMinus);
+
+        myVertex3f({0, 0, 0});
+        myVertex3f({1, 3, 0});
+
+        // myVertex3f({0,  0,   0});
+        // myVertex3f({3, -1, 0.5});
+
+        myVertex3f({0,  0,  0});
+        myVertex3f({3., 3., 3.});
     glEnd();
 }
 
@@ -270,16 +281,28 @@ void renderScene() {
 	glm::vec3 cam = getCameraPos();
 	
 	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
-    drawGoal();
+    // drawGoal();
 
-	Link link{2.0, {1, 1, 1, 0}, 0};
-    link.child = std::make_shared<Link>(Link{1.5, {1, 0, 1, 0}, 0});
-    link.child->child = std::make_shared<Link>(Link{1, {1, 1, 0, 0}, 0});
+	// Link link{2.0, {1, 1, 1, 0}, 0};
+ //    link.child = std::make_shared<Link>(Link{1.5, {1, 0, 1, 0}, 0});
+ //    link.child->child = std::make_shared<Link>(Link{1, {1, 1, 0, 0}, 0});
 
-    // Link link{1.5, PI/6.0, PI/6.0, 0};
-    // link.child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
-    // link.child->child = std::make_shared<Link>(Link{1.5, PI/6.0, PI/6.0, 0});
+    Link link{1, {0}, 0};
+    link.child = std::make_shared<Link>(Link{0.5, {0}, 0});
+    link.child->child = std::make_shared<Link>(Link{0.25, {0}, 0});
+    link.child->child->child = std::make_shared<Link>(Link{0.13, {0}, 0});
 
+    // link.getVector();
+    // link.updateParams({1, 3, 0, 1});
+    // link.getVector();
+    // link.updateParams({3, -1, 0.5, 1});
+    // link.getVector();
+    link.getVector();
+    link.updateParams({3., 3., 3., 1});
+    // // link.getVector();
+    // link.updateParams({1., 1., 1., 1});
+    // // link.getVector();
+    // link.updateParams({1., 1., 1., 1});
     link.getVector();
 
     glFlush();

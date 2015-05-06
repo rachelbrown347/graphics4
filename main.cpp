@@ -43,10 +43,20 @@ const float PI = 3.1415926;
 #define radians_to_degrees(angle_radians) (angle_radians * 180.0 / PI)
 
 const int PALETTE_SIZE = 8;
-const int COLOR_SCALE = 10;
+const int COLOR_SCALE = 7;
 
 float GOAL_THETA = 0.0f;
+float GOAL_RADIUS = 0.5f;
+float GOAL_DIR = 1;
+float MAX_GOAL = 2.5;
 glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
+int CYCLE_COMPLETED = 0;
+int NUM_CYCLES = 3;
+bool BEGIN_SPIRAL = false;
+
+float GOAL_SPEED = 20.0;
+
+
 
 struct Camera
 {
@@ -69,10 +79,31 @@ float COLOR_PALETTE[PALETTE_SIZE][4] = { {0.557f, 0.83f, 0.78f, 1.0f}, //Teal
 
 void updateGoal()
 {
-	GOAL_THETA += 0.1f;
+
+	GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
+	GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
+
 	if (GOAL_THETA >= 360.0f)
 	{
 		GOAL_THETA = 0.0f;
+		CYCLE_COMPLETED++;
+
+		if(!BEGIN_SPIRAL && CYCLE_COMPLETED >= NUM_CYCLES)
+		{
+			BEGIN_SPIRAL = true;
+		}
+	}
+	else if (GOAL_THETA < 0)
+	{
+		GOAL_THETA += 360.0f;
+	}
+	if (GOAL_RADIUS <= 0)
+	{
+		GOAL_DIR = -1;
+	}
+	if (GOAL_RADIUS >= MAX_GOAL)
+	{
+		GOAL_DIR = 1;
 	}
 }
 
@@ -96,16 +127,15 @@ glm::vec3 getCameraPos()
 void drawGoal()
 {
 	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
-	float offset = 0.5f;
 
 	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
-	glTranslatef( offset, 0.0f ,0.0f );	
+	glTranslatef( GOAL_RADIUS, 0.0f ,0.0f );	
 
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
 	glutSolidSphere(0.01, 100, 100);
 
-	glTranslatef( -offset, 0.0f ,0.0f );
+	glTranslatef( -GOAL_RADIUS, 0.0f ,0.0f );
 	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
 	glTranslatef(-GOAL_CENTROID.x, -GOAL_CENTROID.y, -GOAL_CENTROID.z);
 
@@ -115,7 +145,8 @@ void drawLink(Vector origin, Vector end_point) {
     Vector offset = {0, 0, -10};
     origin = origin + offset;
     end_point = end_point + offset;
-	
+
+	float cone_height = (end_point - origin).mag();
 	Vector direction = (end_point - origin).norm();
 	Vector forward = {0, 0, 1};
 
@@ -126,8 +157,10 @@ void drawLink(Vector origin, Vector end_point) {
 	float const stack_count = 100;
 	float const slice_count = 100;
 
-	//Set color based on distance from the origin
-	size_t color_index = int(floor(origin.mag() * COLOR_SCALE)) % PALETTE_SIZE;
+	//Set color based on magnitude
+	//We would have more control if we had a link number
+	//or ancestor/descendent counts
+	size_t color_index = int(floor(cone_height * COLOR_SCALE)) % PALETTE_SIZE;
 	
 	//Transform the MV matrix before drawing the cone
 	//TRANSLATE FIRST!!!
@@ -137,7 +170,7 @@ void drawLink(Vector origin, Vector end_point) {
 	// Need to switch to the materialfv style of defining colors.
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
-	glutSolidCone(base_diameter, direction.mag(), stack_count, slice_count);
+	glutSolidCone(base_diameter, cone_height, stack_count, slice_count);
 	glutSolidSphere(base_diameter, stack_count, slice_count);
 	//Undo the transformation before exiting this function
 	//Transformations must be in REVERSE ORDER

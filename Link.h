@@ -172,6 +172,7 @@ struct Link {
             setParams(nextParams);
             updateParams(goal);
         }
+    }
 
 };
 

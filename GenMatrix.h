@@ -34,6 +34,7 @@ mat getPseudoInv(std::vector<Vector> jVectors) {
 
     mat jOut = V * bigS * U.t();
 
+    mat id = J * jOut;
 
     // // Pseudo Inverse Method
     // mat jT = J.t();

@@ -55,13 +55,13 @@ int NUM_CYCLES = 3;
 bool BEGIN_SPIRAL = false;
 // bool DRAW_LINES = false;
 
-float GOAL_SPEED = 20.0;
+float GOAL_SPEED = 1.;
 
 // build link tree here
-Link startLink{1, {0}, 0, 
-    std::make_shared<Link>(Link{1, {0}, 0, 
-    std::make_shared<Link>(Link{1.25, {0}, 0,
-    std::make_shared<Link>(Link{1.13, {0}, 0})
+Link startLink{3, {0}, 0, 
+    std::make_shared<Link>(Link{3, {0}, 0, 
+    std::make_shared<Link>(Link{2, {0}, 0,
+    std::make_shared<Link>(Link{2, {0}, 0})
 })
 })
 };
@@ -111,7 +111,7 @@ void updateGoal()
 	}
 	if (GOAL_RADIUS >= MAX_GOAL)
 	{
-		GOAL_DIR = 1;
+		GOAL_DIR = 0.5;
 	}
 }
 
@@ -178,13 +178,13 @@ Vector getGoal()
 // }
 
 void myVertex3f (Vector p) {
-    Vector offset = {0, 0, -20};
+    Vector offset = {0, 0, -5};
     p = p + offset;
     glVertex3f(p.x, p.y, p.z);
 }
 
 void drawLink(Vector origin, Vector end_point) {
-    Vector offset = {0, 0, -20};
+    Vector offset = {0, 0, -5};
     origin = origin + offset;
     end_point = end_point + offset;
 
@@ -245,6 +245,21 @@ void drawLink(Vector origin, Vector end_point) {
         glEnd();
         glEnable(GL_LIGHTING);
     // }
+}
+
+void drawGoalLines(Vector goal) {
+    glDisable(GL_LIGHTING);
+
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_LINES);
+        glVertex3f(0, 0, 0);
+        glVertex3f(1, 1, 1);
+
+        //glVertex3f(goal.x, goal.y, goal.z);
+        //myVertex3f({0, 0, 0});
+        //myVertex3f({goal.x, goal.y, goal.z});
+    glEnd();
+    glEnable(GL_LIGHTING);
 }
 
 
@@ -323,36 +338,40 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
-    Vector goal = getGoal();
-    //Vector goal = {1, 3, 0, 1};
-    startLink.updateParams({goal.x, goal.y, goal.z, 1});
-    startLink.getVector();
     updateGoal();
+    Vector goal = getGoal();
+
+    //Vector goal = {0 + tip, 1 + tip, 0};
+    //drawGoalLines(goal);
+    //Vector goal = {1, 3, 0, 1};
+     startLink.updateParams({goal.x, goal.y, goal.z, 1});
+     startLink.getVector();
 	glutPostRedisplay();
+
 }
 
 // function that does the actual drawing of stuff
 void renderScene() {
 	
-	//Define Colors
-	GLfloat specMat[] = {1,1,1,1};
-	GLfloat shnyMat[] = { 50 };
-	GLfloat lightPos[] = {2, 2, 2, 0};
-	GLfloat whiteLight[] = { 1, 1, 1, 1};
-	GLfloat ambLight[] = { 0.2, 0.2, 0.2, 1.0};
+	// //Define Colors
+	// GLfloat specMat[] = {1,1,1,1};
+	// GLfloat shnyMat[] = { 50 };
+	// GLfloat lightPos[] = {2, 2, 2, 0};
+	// GLfloat whiteLight[] = { 1, 1, 1, 1};
+	// GLfloat ambLight[] = { 0.2, 0.2, 0.2, 1.0};
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the color buffer
     glEnable(GL_DEPTH_TEST);
 
-	//Define Materials
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specMat);
-	glMaterialfv(GL_FRONT, GL_SHININESS, shnyMat);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, whiteLight);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
+	// //Define Materials
+	// glMaterialfv(GL_FRONT, GL_SPECULAR, specMat);
+	// glMaterialfv(GL_FRONT, GL_SHININESS, shnyMat);
+	// glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+	// glLightfv(GL_LIGHT0, GL_SPECULAR, whiteLight);
+	// glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
+	// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
+	// glEnable(GL_LIGHTING);
+	// glEnable(GL_LIGHT0);
 	
     glClearColor (0.0, 0.0, 0.0, 0.0);
 	

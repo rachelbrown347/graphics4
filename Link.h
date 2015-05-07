@@ -9,7 +9,7 @@
 void drawLink(Vector, Vector);
 
 struct Link {
-    double d; //length
+    const double d; //length
     Vector r; //rotation
     double a; //offset
 
@@ -147,37 +147,85 @@ struct Link {
         }
     }
 
-    void updateParams(Vector goal, const double step=0.01) {
-        std::vector<Vector> jVectors = calcJacobianVectors(step);
+    // void updateParams(Vector goal, const double step=0.01) {
+    //     std::vector<Vector> jVectors = calcJacobianVectors(step);
+    //     mat pInv = getPseudoInv(jVectors);
+
+    //     vec currParams = getParams();
+    //     vec currCost = getCostDiff(goal);
+    //     double currError = norm(currCost, 2);
+
+    //     vec nextParams = currParams - pInv * currCost;
+    //     setParams(nextParams);
+    //     vec nextCost = getCostDiff(goal);
+    //     double nextError = norm(nextCost, 2);
+
+    //     if (nextError > currError + 0.01) {
+    //         //vec halfParams = currParams - (pInv * currCost) / (step * 2.0);
+    //         if (step < 0.00001) {
+    //             // error cannot be reduced to zero
+    //             setParams(currParams);
+    //         } else {
+    //             // try a smaller step
+    //             //setParams(halfParams);
+    //             updateParams(goal, step / 2.0);
+    //         }
+    //     } else if (nextError < currError - 0.01) {
+    //         // great! take another step of the same size
+    //         setParams(nextParams);
+    //         updateParams(goal);
+    //     } else {
+    //         // nextError ~= thisError
+    //         setParams(currParams);
+    //     }
+    // }
+
+    void updateParams(Vector goal, const double step=1.0) {
+        std::vector<Vector> jVectors = calcJacobianVectors(0.001);
         mat pInv = getPseudoInv(jVectors);
 
-        vec thisParams = getParams();
-        vec thisCost = getCostDiff(goal);
-        double thisError = norm(thisCost, 2);
+        vec currParams = getParams();
+        vec currCost = getCostDiff(goal);
+        double currError = norm(currCost, 2);
 
-        vec nextParams = thisParams - pInv * thisCost;
+        vec nextParams = currParams - (pInv * currCost) * step;
         setParams(nextParams);
         vec nextCost = getCostDiff(goal);
         double nextError = norm(nextCost, 2);
 
-        if (nextError > thisError + 0.01) {
-            vec halfParams = thisParams - (pInv * thisCost) / 2.0;
-            if (norm(nextParams - thisParams, 2) < 0.0001) {
-                // error cannot be reduced to zero
-                setParams(thisParams);
-            } else {
+        setParams(currParams);
+
+        if (nextError > currError) {
+            if (step > 0.01) {
                 // try a smaller step
-                setParams(halfParams);
-                updateParams(goal);
+                updateParams(goal, step / 2.0);
             }
-        } else if (nextError < thisError - 0.01) {
+        } else {
             // great! take another step of the same size
             setParams(nextParams);
             updateParams(goal);
-        } else {
-            // nextError ~= thisError
-            setParams(thisParams);
         }
+
+        
+
+        // if (nextError > currError + 0.01) {
+        //     vec halfParams = currParams - (pInv * currCost) / (step * 2.0);
+        //     if (norm(currParams - halfParams, 2) < 0.00001) {
+        //         // error cannot be reduced to zero
+        //         setParams(currParams);
+        //     } else {
+        //         // try a smaller step
+        //         //setParams(halfParams);
+        //         updateParams(goal, step * 2.0);
+        //     }
+        // } else if (nextError < currError - 0.01) {
+        //     // great! take another step of the same size
+        //     setParams(nextParams);
+        //     updateParams(goal);
+        // } else {
+        //     // nextError ~= thisError
+        //     setParams(currParams);
+        // }
     }
 
 };

@@ -53,6 +53,7 @@ glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
 int CYCLE_COMPLETED = 0;
 int NUM_CYCLES = 3;
 bool BEGIN_SPIRAL = false;
+bool DRAW_LINES = false;
 
 float GOAL_SPEED = 20.0;
 
@@ -217,31 +218,33 @@ void drawLink(Vector origin, Vector end_point) {
 	//Transformations must be in REVERSE ORDER
 	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 	glTranslatef(-origin.x, -origin.y, -origin.z);
-	
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0, 1.0, 1.0);
 
-    glBegin(GL_LINES);
-        glColor3f(1.0, 0.0, 0.0);
-        glVertex3f(origin.x, origin.y, origin.z);
-        glVertex3f(end_point.x, end_point.y, end_point.z);
+    if (DRAW_LINES) {
+        glDisable(GL_LIGHTING);
+        glColor3f(1.0, 1.0, 1.0);
 
-        glColor3f(0.0, 0.0, 1.0);
-        Vector crossbarPlus  = origin + 0.2 * (end_point - origin) + 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
-        Vector crossbarMinus = origin + 0.2 * (end_point - origin) - 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
-        glVertex3f(crossbarPlus.x, crossbarPlus.y, crossbarPlus.z);
-        glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
+        glBegin(GL_LINES);
+            glColor3f(1.0, 0.0, 0.0);
+            glVertex3f(origin.x, origin.y, origin.z);
+            glVertex3f(end_point.x, end_point.y, end_point.z);
 
-        // myVertex3f({0, 0, 0});
-        // myVertex3f({1, 3, 0});
+            glColor3f(0.0, 0.0, 1.0);
+            Vector crossbarPlus  = origin + 0.2 * (end_point - origin) + 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
+            Vector crossbarMinus = origin + 0.2 * (end_point - origin) - 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
+            glVertex3f(crossbarPlus.x, crossbarPlus.y, crossbarPlus.z);
+            glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
 
-        // // myVertex3f({0,  0,   0});
-        // // myVertex3f({3, -1, 0.5});
+            // myVertex3f({0, 0, 0});
+            // myVertex3f({1, 3, 0});
 
-        // myVertex3f({0,  0,  0});
-        // myVertex3f({3., 3., 3.});
-    glEnd();
-    glEnable(GL_LIGHTING);
+            // // myVertex3f({0,  0,   0});
+            // // myVertex3f({3, -1, 0.5});
+
+            // myVertex3f({0,  0,  0});
+            // myVertex3f({3., 3., 3.});
+        glEnd();
+        glEnable(GL_LIGHTING);
+    }
 }
 
 

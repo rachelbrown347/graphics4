@@ -6,8 +6,6 @@
 #include "Matrix.h"
 #include "GenMatrix.h"
 
-double STEP = 0.01;
-
 void drawLink(Vector, Vector);
 
 struct Link {
@@ -149,8 +147,8 @@ struct Link {
         }
     }
 
-    void updateParams(Vector goal) {
-        std::vector<Vector> jVectors = calcJacobianVectors(STEP);
+    void updateParams(Vector goal, const double step=0.01) {
+        std::vector<Vector> jVectors = calcJacobianVectors(step);
         mat pInv = getPseudoInv(jVectors);
 
         vec thisParams = getParams();
@@ -162,22 +160,23 @@ struct Link {
         vec nextCost = getCostDiff(goal);
         double nextError = norm(nextCost, 2);
 
-        if (nextError > thisError) {
-            STEP = STEP / 2.0;
-            if (STEP < 0.001) {
+        if (nextError > thisError + 0.01) {
+            vec halfParams = thisParams - (pInv * thisCost) / 2.0;
+            if (norm(nextParams - thisParams, 2) < 0.001) {
                 // error cannot be reduced to zero
                 setParams(thisParams);
-                return;
             } else {
                 // try a smaller step
+                setParams(halfParams);
                 updateParams(goal);
             }
-        } else if (nextError < thisError) {
+        } else if (nextError < thisError - 0.01) {
             // great! take another step of the same size
+            setParams(nextParams);
             updateParams(goal);
         } else {
-            // nextError == thisError
-            return;
+            // nextError ~= thisError
+            setParams(thisParams);
         }
     }
 

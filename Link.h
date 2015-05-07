@@ -162,7 +162,7 @@ struct Link {
 
         if (nextError > thisError + 0.01) {
             vec halfParams = thisParams - (pInv * thisCost) / 2.0;
-            if (norm(nextParams - thisParams, 2) < 0.001) {
+            if (norm(nextParams - thisParams, 2) < 0.0001) {
                 // error cannot be reduced to zero
                 setParams(thisParams);
             } else {

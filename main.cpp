@@ -194,7 +194,7 @@ void drawLink(Vector origin, Vector end_point) {
 	Vector axis_of_rotation = direction.cross(forward).norm();
 	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 
-	float const base_diameter = 0.1f;
+	float const base_diameter = 0.05f;
 	float const stack_count = 100;
 	float const slice_count = 100;
 
@@ -218,6 +218,9 @@ void drawLink(Vector origin, Vector end_point) {
 	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 	glTranslatef(-origin.x, -origin.y, -origin.z);
 	
+    glDisable(GL_LIGHTING);
+    glColor3f(1.0, 1.0, 1.0);
+
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
         glVertex3f(origin.x, origin.y, origin.z);
@@ -238,6 +241,7 @@ void drawLink(Vector origin, Vector end_point) {
         // myVertex3f({0,  0,  0});
         // myVertex3f({3., 3., 3.});
     glEnd();
+    glEnable(GL_LIGHTING);
 }
 
 
@@ -316,10 +320,11 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
+    Vector goal = getGoal();
+    startLink.updateParams({goal.x, goal.y, goal.z, 1});
+    startLink.getVector();
     updateGoal();
 	glutPostRedisplay();
-    //startLink.updateParams({goalx, goaly, goalz, 1});
-    //startLink.getVector();
 }
 
 // function that does the actual drawing of stuff

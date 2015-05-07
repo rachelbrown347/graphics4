@@ -55,7 +55,14 @@ bool BEGIN_SPIRAL = false;
 
 float GOAL_SPEED = 20.0;
 
-
+// build link tree here
+Link startLink{1, {0}, 0, 
+    std::make_shared<Link>(Link{0.5, {0}, 0, 
+    std::make_shared<Link>(Link{0.25, {0}, 0,
+    std::make_shared<Link>(Link{0.13, {0}, 0})
+})
+})
+};
 
 struct Camera
 {
@@ -128,25 +135,29 @@ void drawGoal()
 	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
 
 	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
-	glTranslatef( GOAL_RADIUS, 0.0f ,0.0f );	
+	glTranslatef( GOAL_RADIUS, 0.0f, 0.0f - 10);	
 
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
 	glutSolidSphere(0.01, 100, 100);
 
-	glTranslatef( -GOAL_RADIUS, 0.0f ,0.0f );
+	glTranslatef( -GOAL_RADIUS, 0.0f, 0.0f);
 	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
 	glTranslatef(-GOAL_CENTROID.x, -GOAL_CENTROID.y, -GOAL_CENTROID.z);
 
 }
 
 void myVertex3f (Vector p) {
-    Vector offset = {0, 0, -10};
+    Vector offset = {0, 0, -3};
     p = p + offset;
     glVertex3f(p.x, p.y, p.z);
 }
 
 void drawLink(Vector origin, Vector end_point) {
+    Vector offset = {0, 0, -3};
+    origin = origin + offset;
+    end_point = end_point + offset;
+
 	float cone_height = (end_point - origin).mag();
 	Vector direction = (end_point - origin).norm();
 	Vector forward = {0, 0, 1};
@@ -165,7 +176,7 @@ void drawLink(Vector origin, Vector end_point) {
 	
 	//Transform the MV matrix before drawing the cone
 	//TRANSLATE FIRST!!!
-	glTranslatef(origin.x, origin.y, origin.z - 10);
+	glTranslatef(origin.x, origin.y, origin.z);
 	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
 
 	// Need to switch to the materialfv style of defining colors.
@@ -176,27 +187,27 @@ void drawLink(Vector origin, Vector end_point) {
 	//Undo the transformation before exiting this function
 	//Transformations must be in REVERSE ORDER
 	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	glTranslatef(-origin.x, -origin.y, -origin.z + 10);
+	glTranslatef(-origin.x, -origin.y, -origin.z);
 	
     glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
-        myVertex3f(origin);
-        myVertex3f(end_point);
+        glVertex3f(origin.x, origin.y, origin.z);
+        glVertex3f(end_point.x, end_point.y, end_point.z);
 
         glColor3f(0.0, 0.0, 1.0);
         Vector crossbarPlus  = origin + 0.2 * (end_point - origin) + 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
         Vector crossbarMinus = origin + 0.2 * (end_point - origin) - 0.2 * ((end_point - origin).cross({0, 1, 0})).norm();
-        myVertex3f(crossbarPlus);
-        myVertex3f(crossbarMinus);
+        glVertex3f(crossbarPlus.x, crossbarPlus.y, crossbarPlus.z);
+        glVertex3f(crossbarMinus.x, crossbarMinus.y, crossbarMinus.z);
 
-        myVertex3f({0, 0, 0});
-        myVertex3f({1, 3, 0});
+        // myVertex3f({0, 0, 0});
+        // myVertex3f({1, 3, 0});
 
-        // myVertex3f({0,  0,   0});
-        // myVertex3f({3, -1, 0.5});
+        // // myVertex3f({0,  0,   0});
+        // // myVertex3f({3, -1, 0.5});
 
-        myVertex3f({0,  0,  0});
-        myVertex3f({3., 3., 3.});
+        // myVertex3f({0,  0,  0});
+        // myVertex3f({3., 3., 3.});
     glEnd();
 }
 
@@ -276,8 +287,10 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
-	updateGoal();
+    updateGoal();
 	glutPostRedisplay();
+    //startLink.updateParams({goalx, goaly, goalz, 1});
+    //startLink.getVector();
 }
 
 // function that does the actual drawing of stuff
@@ -313,29 +326,9 @@ void renderScene() {
 	glm::vec3 cam = getCameraPos();
 	
 	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
-    // drawGoal();
+    drawGoal();
 
-	// Link link{2.0, {1, 1, 1, 0}, 0};
- //    link.child = std::make_shared<Link>(Link{1.5, {1, 0, 1, 0}, 0});
- //    link.child->child = std::make_shared<Link>(Link{1, {1, 1, 0, 0}, 0});
-
-    Link link{1, {0}, 0};
-    link.child = std::make_shared<Link>(Link{0.5, {0}, 0});
-    link.child->child = std::make_shared<Link>(Link{0.25, {0}, 0});
-    link.child->child->child = std::make_shared<Link>(Link{0.13, {0}, 0});
-
-    // link.getVector();
-    // link.updateParams({1, 3, 0, 1});
-    // link.getVector();
-    // link.updateParams({3, -1, 0.5, 1});
-    // link.getVector();
-    link.getVector();
-    link.updateParams({3., 3., 3., 1});
-    // // link.getVector();
-    // link.updateParams({1., 1., 1., 1});
-    // // link.getVector();
-    // link.updateParams({1., 1., 1., 1});
-    link.getVector();
+    startLink.getVector();
 
     glFlush();
     glutSwapBuffers();                    // swap buffers (we earlier set double buffer)

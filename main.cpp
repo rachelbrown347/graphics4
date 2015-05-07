@@ -30,6 +30,7 @@
 #include "glm/glm/gtx/quaternion.hpp"
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtc/type_ptr.hpp"
+#include "glm/glm/gtx/string_cast.hpp"
 
 using namespace std;
 
@@ -129,21 +130,49 @@ glm::vec3 getCameraPos()
 	
 }
 
+Vector getGoal()
+{
+	//cout << GOAL_THETA << ", " << GOAL_RADIUS << endl;
+
+	
+	glm::vec4 goal = glm::vec4(0.0, 0.0, -10.0, 1.0);
+	glm::mat4 transform = glm::mat4();
+	//cout << "Identity:" << endl;
+	
+	transform = glm::translate(transform, GOAL_CENTROID);
+	//cout << "Translated 1: " << glm::to_string(transform) << endl;
+
+	float theta = degrees_to_radians(GOAL_THETA);
+	
+	transform = glm::rotate(transform, theta, glm::vec3(0.0, 0.0, 1.0f));
+	//cout << "Rotated: " << glm::to_string(transform) << endl;
+	
+	transform = glm::translate(transform, glm::vec3(GOAL_RADIUS, 0.0, 0.0));
+	//cout << "Translated" << glm::to_string(transform) << endl;
+	
+	goal =  transform * goal;
+	//cout << "( " << goal.x << "," << goal.y << "," << goal.z <<  ")" << endl;
+	
+	Vector goal_pos = {goal.x, goal.y, goal.z};
+	
+	return goal_pos;
+	
+}
+
 
 void drawGoal()
 {
-	glTranslatef(GOAL_CENTROID.x, GOAL_CENTROID.y, GOAL_CENTROID.z);
+    Vector goal_position = getGoal();
 
-	glRotatef(GOAL_THETA, 0.0f, 0.0f, 1.0f);
-	glTranslatef( GOAL_RADIUS, 0.0f, 0.0f - 10);	
+	//cout << "[ " << goal_position[0] << " , " << goal_position.y << " , " << goal_position.z << " ]" << endl;
+	
+	glTranslatef( goal_position.x, goal_position.y, goal_position.z);	
 
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
 	glutSolidSphere(0.01, 100, 100);
 
-	glTranslatef( -GOAL_RADIUS, 0.0f, 0.0f);
-	glRotatef(-GOAL_THETA, 0.0f, 0.0f, 1.0f);
-	glTranslatef(-GOAL_CENTROID.x, -GOAL_CENTROID.y, -GOAL_CENTROID.z);
+	glTranslatef( -goal_position.x, -goal_position.y, -goal_position.z);	
 
 }
 

@@ -9,7 +9,7 @@
 void drawLink(Vector, Vector);
 
 struct Link {
-    double d; //length
+    const double d; //length
     Vector r; //rotation
     double a; //offset
 
@@ -173,6 +173,5 @@ struct Link {
             updateParams(goal);
         }
     }
-
 };
 

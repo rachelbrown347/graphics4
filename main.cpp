@@ -323,9 +323,6 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
-    // Vector goal = getGoal();
-    // startLink.updateParams({goal.x, goal.y, goal.z, 1});
-    // startLink.getVector();
     updateGoal();
 	glutPostRedisplay();
 }
@@ -365,8 +362,8 @@ void renderScene() {
 	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
     drawGoal();
 
-    startLink.getVector();
-
+    //startLink.getVector();
+    updateGoal();
     Vector goal = getGoal();
     startLink.updateParams({goal.x, goal.y, goal.z, 1});
     startLink.getVector();

@@ -53,9 +53,12 @@ glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
 int CYCLE_COMPLETED = 0;
 int NUM_CYCLES = 3;
 bool BEGIN_SPIRAL = false;
-bool DRAW_LINES = false;
+bool DRAW_LINES = true;
+int TIME_TICKER = 0;
+int TIME_DELAY = 10;
 
-float GOAL_SPEED = 20.0;
+
+float GOAL_SPEED = 100.0;
 
 // build link tree here
 Link startLink{1, {0}, 0, 
@@ -75,49 +78,58 @@ struct Camera
 
 Camera CAMERA;
 
-float COLOR_PALETTE[PALETTE_SIZE][4] = { {0.557f, 0.83f, 0.78f, 1.0f}, //Teal
-											   {1.0f, 1.0f, 0.0f, 1.0f}, //Yellow
-											   {0.75f, 0.73f, 0.85f, 1.0f}, //Purple
-											   {0.984f, 0.5f, 0.447f, 1.0f}, //Salmon Red
-											   {0.5f, 0.694f, 0.827f, 1.0f}, //Powder Blue
-											   {0.992f, 0.706f, 0.384f, 1.0f},  //Orange
-											   {0.702f, 0.871f, 0.412f, 1.0f}, //Lime Green
-											   {0.988f, 0.804f, 0.898f, 1.0f}};//Bubblegum Pink
+float COLOR_PALETTE[PALETTE_SIZE][4] ={
+	{0.557f, 0.83f, 0.78f, 1.0f}, //Teal
+	{1.0f, 1.0f, 0.0f, 1.0f}, //Yellow
+	{0.75f, 0.73f, 0.85f, 1.0f}, //Purple
+	{0.984f, 0.5f, 0.447f, 1.0f}, //Salmon Red
+	{0.5f, 0.694f, 0.827f, 1.0f}, //Powder Blue
+	{0.992f, 0.706f, 0.384f, 1.0f},  //Orange
+	{0.702f, 0.871f, 0.412f, 1.0f}, //Lime Green
+	{0.988f, 0.804f, 0.898f, 1.0f}};//Bubblegum Pink
 
 
 void updateGoal()
 {
-
-	GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
-	GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
-
-	if (GOAL_THETA >= 360.0f)
+	TIME_TICKER++;
+	cout << TIME_TICKER << endl;
+	
+	if (TIME_TICKER == TIME_DELAY)
 	{
-		GOAL_THETA = 0.0f;
-		CYCLE_COMPLETED++;
-
-		if(!BEGIN_SPIRAL && CYCLE_COMPLETED >= NUM_CYCLES)
+		TIME_TICKER = 0;
+		
+		GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
+		GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
+		
+		if (GOAL_THETA >= 360.0f)
 		{
-			BEGIN_SPIRAL = true;
+			GOAL_THETA = 0.0f;
+			CYCLE_COMPLETED++;
+			
+			if(!BEGIN_SPIRAL && CYCLE_COMPLETED >= NUM_CYCLES)
+			{
+				BEGIN_SPIRAL = true;
+			}
+		}
+		else if (GOAL_THETA < 0)
+		{
+			GOAL_THETA += 360.0f;
+		}
+		if (GOAL_RADIUS <= 0)
+		{
+			GOAL_DIR = -1;
+		}
+		if (GOAL_RADIUS >= MAX_GOAL)
+		{
+			GOAL_DIR = 1;
 		}
 	}
-	else if (GOAL_THETA < 0)
-	{
-		GOAL_THETA += 360.0f;
-	}
-	if (GOAL_RADIUS <= 0)
-	{
-		GOAL_DIR = -1;
-	}
-	if (GOAL_RADIUS >= MAX_GOAL)
-	{
-		GOAL_DIR = 1;
-	}
+	
 }
 
 glm::vec3 getCameraPos()
 {
-	glm::vec4 start = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+	glm::vec4 start = glm::vec4(0.0f, 0.0f, CAMERA.dist, 1.0f);
 
 	glm::mat4 rotations = glm::mat4();
 	rotations = glm::rotate(rotations, (glm::mediump_float)CAMERA.theta, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -136,7 +148,7 @@ Vector getGoal()
 	//cout << GOAL_THETA << ", " << GOAL_RADIUS << endl;
 
 	
-	glm::vec4 goal = glm::vec4(0.0, 0.0, -10.0, 1.0);
+	glm::vec4 goal = glm::vec4(0.0, 0.0, -2.0, 1.0);
 	glm::mat4 transform = glm::mat4();
 	//cout << "Identity:" << endl;
 	
@@ -155,6 +167,9 @@ Vector getGoal()
 	//cout << "( " << goal.x << "," << goal.y << "," << goal.z <<  ")" << endl;
 	
 	Vector goal_pos = {goal.x, goal.y, goal.z};
+
+	//Fixed Goal Position for debugging
+	//goal_pos = {0.5, 0.75, 0.1};
 	
 	return goal_pos;
 	
@@ -184,41 +199,46 @@ void myVertex3f (Vector p) {
 }
 
 void drawLink(Vector origin, Vector end_point) {
-    Vector offset = {0, 0, -3};
-    origin = origin + offset;
-    end_point = end_point + offset;
 
-	float cone_height = (end_point - origin).mag();
-	Vector direction = (end_point - origin).norm();
-	Vector forward = {0, 0, 1};
-
-	Vector axis_of_rotation = direction.cross(forward).norm();
-	float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
-
-	float const base_diameter = 0.05f;
-	float const stack_count = 100;
-	float const slice_count = 100;
-
-	//Set color based on magnitude
-	//We would have more control if we had a link number
-	//or ancestor/descendent counts
-	size_t color_index = int(floor(cone_height * COLOR_SCALE)) % PALETTE_SIZE;
+	if (!DRAW_LINES)
+	{
+		Vector offset = {0, 0, -3};
+		origin = origin + offset;
+		end_point = end_point + offset;
+		
+		float cone_height = (end_point - origin).mag();
+		Vector direction = (end_point - origin).norm();
+		Vector forward = {1, 0, 0};
+		
+		Vector axis_of_rotation = direction.cross(forward).norm();
+		float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
+		
+		float const base_diameter = 0.05f;
+		float const stack_count = 5;
+		float const slice_count = 5;
+		
+		//Set color based on magnitude
+		//We would have more control if we had a link number
+		//or ancestor/descendent counts
+		size_t color_index = int(floor(cone_height * COLOR_SCALE)) % PALETTE_SIZE;
+		
+		//Transform the MV matrix before drawing the cone
+		//TRANSLATE FIRST!!!
+		glTranslatef(origin.x, origin.y, origin.z);
+		glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+		
+		// Need to switch to the materialfv style of defining colors.
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
+		glutWireCone(base_diameter, cone_height, stack_count, slice_count);
+		glutWireSphere(base_diameter, stack_count, slice_count);
+		//Undo the transformation before exiting this function
+		//Transformations must be in REVERSE ORDER
+		glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
+		glTranslatef(-origin.x, -origin.y, -origin.z);
+	}
 	
-	//Transform the MV matrix before drawing the cone
-	//TRANSLATE FIRST!!!
-	glTranslatef(origin.x, origin.y, origin.z);
-	glRotatef(-angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-
-	// Need to switch to the materialfv style of defining colors.
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
-	glutSolidCone(base_diameter, cone_height, stack_count, slice_count);
-	glutSolidSphere(base_diameter, stack_count, slice_count);
-	//Undo the transformation before exiting this function
-	//Transformations must be in REVERSE ORDER
-	glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);
-	glTranslatef(-origin.x, -origin.y, -origin.z);
-
+	
     if (DRAW_LINES) {
         glDisable(GL_LIGHTING);
         glColor3f(1.0, 1.0, 1.0);
@@ -251,24 +271,38 @@ void drawLink(Vector origin, Vector end_point) {
 // EVERYTHING BELOW HERE IS FOR DISPLAY ONLY
 
 void asciiInput(unsigned char key, int x, int y) {
+	float cam_scale = 0.1f;
+	float max_dist = 10.0f;
+	float min_dist = 0.1f;
+
     switch(key) {
     case 32: //space
         exit(0);
 		break;
+
+	case '+':
+	case '=':
+		CAMERA.dist = max(CAMERA.dist - cam_scale, min_dist);
+		break;
+
+	case '-':
+	case '_':
+		CAMERA.dist = min(CAMERA.dist + cam_scale, max_dist);
+		break;
+		
+		
     }
 }
 
 
 void specialKeyFunc(int key, int x, int y)
 {
-	/*
 	float cam_scale = 0.1f;
-	float max_dist = 10.0f;
-	float min_dist = 0.1f;
-	//*/
+	
+		
 	switch(key)
 	{
-		/*
+	
 	//camera controls
 	case GLUT_KEY_UP:
 		CAMERA.phi = min(89.0f, CAMERA.phi + cam_scale);
@@ -294,14 +328,7 @@ void specialKeyFunc(int key, int x, int y)
 		}		
 		break;
 
-	case GLUT_KEY_PAGE_UP:
-		CAMERA.dist = max(CAMERA.dist - cam_scale, min_dist);
-		break;
-
-	case GLUT_KEY_PAGE_DOWN:
-		CAMERA.dist = min(CAMERA.dist - cam_scale, max_dist);
-		break;
-		*/
+	
 	}
 }
 
@@ -325,7 +352,13 @@ void reshapeWindow(int w, int h) {
 
 void updateScene()
 {
+	
     updateGoal();
+	Vector goal = getGoal();
+//	cout << "current goal:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
+	
+    startLink.updateParams({goal.x, goal.y, goal.z, 1});
+	
 	glutPostRedisplay();
 }
 
@@ -363,15 +396,12 @@ void renderScene() {
 	
 	gluLookAt (cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0f, 0.0);
     drawGoal();
-
-    //startLink.getVector();
-    updateGoal();
-    Vector goal = getGoal();
-	cout << "current goal:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
 	
-    startLink.updateParams({goal.x, goal.y, goal.z, 1});
     startLink.getVector();
 
+    //startLink.getVector();
+    //updateGoal();
+    
     glFlush();
     glutSwapBuffers();                    // swap buffers (we earlier set double buffer)
 }

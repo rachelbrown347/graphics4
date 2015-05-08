@@ -121,8 +121,13 @@ struct Link {
     }
 
     vec getCostDiff(Vector goal) {
+//		cout << "getCostDiff:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
+		
         Vector endpoint = this->getEndpoint();
+		//cout << "Endpoint: " << endpoint.x << ',' << endpoint.y << ',' << endpoint.z << endl;
         Vector diff = endpoint - goal;
+		//cout << "diff:" << diff.x << ',' << diff .y << ',' << diff.z << endl;
+		
         vec cost = {diff[0], diff[1], diff[2]};
         return cost;
     }
@@ -148,13 +153,15 @@ struct Link {
     }
 
     void updateParams(Vector goal, const double step=1.0) {
-		cout << "Params passed:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
+		//cout << "Params passed:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
         std::vector<Vector> jVectors = calcJacobianVectors(0.001);
         mat pInv = getPseudoInv(jVectors);
 
         vec currParams = getParams();
         vec currCost = getCostDiff(goal);
         double currError = norm(currCost, 2);
+		//cout << "CurrError:" << currError << endl;
+		
 
         vec nextParams = currParams - (pInv * currCost) * step;
         setParams(nextParams);

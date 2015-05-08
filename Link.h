@@ -148,6 +148,7 @@ struct Link {
     }
 
     void updateParams(Vector goal, const double step=1.0) {
+		cout << "Params passed:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
         std::vector<Vector> jVectors = calcJacobianVectors(0.001);
         mat pInv = getPseudoInv(jVectors);
 

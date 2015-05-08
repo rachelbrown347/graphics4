@@ -261,13 +261,14 @@ void asciiInput(unsigned char key, int x, int y) {
 
 void specialKeyFunc(int key, int x, int y)
 {
+	/*
 	float cam_scale = 0.1f;
 	float max_dist = 10.0f;
 	float min_dist = 0.1f;
-	
+	//*/
 	switch(key)
 	{
-
+		/*
 	//camera controls
 	case GLUT_KEY_UP:
 		CAMERA.phi = min(89.0f, CAMERA.phi + cam_scale);
@@ -300,6 +301,7 @@ void specialKeyFunc(int key, int x, int y)
 	case GLUT_KEY_PAGE_DOWN:
 		CAMERA.dist = min(CAMERA.dist - cam_scale, max_dist);
 		break;
+		*/
 	}
 }
 
@@ -365,6 +367,8 @@ void renderScene() {
     //startLink.getVector();
     updateGoal();
     Vector goal = getGoal();
+	cout << "current goal:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
+	
     startLink.updateParams({goal.x, goal.y, goal.z, 1});
     startLink.getVector();
 

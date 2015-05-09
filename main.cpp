@@ -46,6 +46,8 @@ const int PALETTE_SIZE = 8;
 const int COLOR_SCALE = 7;
 
 float GOAL_THETA = 0.0f;
+float GOAL_PHI = 0.0f;
+
 float GOAL_RADIUS = 0.5f;
 float GOAL_DIR = 1;
 float MAX_GOAL = 3;
@@ -56,16 +58,25 @@ bool BEGIN_SPIRAL = false;
 bool DRAW_LINES = false;
 
 
-float GOAL_SPEED = 100.0;
+float GOAL_SPEED = 20.0;
 
 // build link tree here
-Link startLink{0.5, {0}, 0, 
-    std::make_shared<Link>(Link{1, {0}, 0, 
-    std::make_shared<Link>(Link{0.75, {0}, 0,
-    std::make_shared<Link>(Link{0.5, {0}, 0})
+Link startLink{0.35, {0}, 0, 
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{0.35, {0}, 0, 											   
+    std::make_shared<Link>(Link{0.35, {0}, 0})
 })
 })
-};
+})
+})
+})
+})
+})};
 
 struct Camera
 {
@@ -92,6 +103,8 @@ void updateGoal()
 
 		
     GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
+	GOAL_PHI += 0.1f * GOAL_SPEED * GOAL_DIR;
+	
     GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
 
     if (GOAL_THETA >= 360.0f)
@@ -108,7 +121,17 @@ void updateGoal()
     {
     	GOAL_THETA += 360.0f;
     }
-    if (GOAL_RADIUS <= 0)
+
+	if (GOAL_PHI >= 360.0f)
+	{
+		GOAL_PHI = 0.0f;
+	}
+	else if (GOAL_PHI < 0)
+	{
+		GOAL_PHI = 360.0f;
+	}
+
+	if (GOAL_RADIUS <= 0)
     {
     	GOAL_DIR = -1;
     }
@@ -140,7 +163,7 @@ Vector getGoal()
 	//cout << GOAL_THETA << ", " << GOAL_RADIUS << endl;
 
 	
-	glm::vec4 goal = glm::vec4(0.0, 0.0, 2.0, 1.0);
+	glm::vec4 goal = glm::vec4(0.0, 0.0, 0.0, 1.0);
 	glm::mat4 transform = glm::mat4();
 	//cout << "Identity:" << endl;
 	
@@ -148,8 +171,12 @@ Vector getGoal()
 	//cout << "Translated 1: " << glm::to_string(transform) << endl;
 
 	float theta = degrees_to_radians(GOAL_THETA);
+	float phi = degrees_to_radians(GOAL_PHI);
+	
 	
 	transform = glm::rotate(transform, theta, glm::vec3(0.0, 0.0, 1.0f));
+	transform = glm::rotate(transform, phi, glm::vec3(1.0, 0.0f, 0.0));
+	
 	//cout << "Rotated: " << glm::to_string(transform) << endl;
 	
 	transform = glm::translate(transform, glm::vec3(GOAL_RADIUS, 0.0, 0.0));

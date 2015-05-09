@@ -1,0 +1,13 @@
+Authors:
+		Rachel Albert
+		Alex Hall
+		
+Platform:
+		OSX
+
+Submission:
+		Rachel Albert
+
+Extra Credit:
+	  IK Solver shown on multiple arms (see video)
+	  To view the multiple arms, uncomment/comment the trees as appropriate. See lines 65, 74, & 80 in the code for the three different trees. Only running one tree at a time has been tested. 

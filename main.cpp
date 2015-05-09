@@ -61,6 +61,23 @@ bool DRAW_LINES = false;
 float GOAL_SPEED = 20.0;
 
 // build link tree here
+
+// Tree 1
+Link startLink{0.5, {0}, 0, 
+    std::make_shared<Link>(Link{1.0, {0}, 0,
+    std::make_shared<Link>(Link{0.75, {0}, 0,
+    std::make_shared<Link>(Link{0.5, {0}, 0,})
+})
+})};
+//*/
+
+/*// Tree 2
+Link startLink{1.0, {0}, 0, 
+    std::make_shared<Link>(Link{0.35, {0}, 0,
+    std::make_shared<Link>(Link{1.25, {0}, 0,})
+})};
+//*/
+/* Tree 3
 Link startLink{0.35, {0}, 0, 
     std::make_shared<Link>(Link{0.35, {0}, 0,
     std::make_shared<Link>(Link{0.35, {0}, 0,
@@ -77,7 +94,7 @@ Link startLink{0.35, {0}, 0,
 })
 })
 })};
-
+*/
 struct Camera
 {
 	float theta = 0.0f;

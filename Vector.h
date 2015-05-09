@@ -5,6 +5,8 @@
 struct Vector {
 	double x, y, z, w;
 
+	~Vector() = default;
+
 	double& operator[](const size_t i) {
  	 	switch (i) {
  		case 0:

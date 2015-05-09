@@ -154,15 +154,18 @@ struct Link {
 
     void updateParams(Vector goal, const double step=1.0) {
 		//cout << "Params passed:" << goal.x << ',' << goal.y << ',' << goal.z << endl;
-        std::vector<Vector> jVectors = calcJacobianVectors(0.001);
-        mat pInv = getPseudoInv(jVectors);
-
         vec currParams = getParams();
         vec currCost = getCostDiff(goal);
         double currError = norm(currCost, 2);
 		//cout << "CurrError:" << currError << endl;
-		
 
+        if (currError < 0.001) {
+            return;
+        }
+
+        std::vector<Vector> jVectors = calcJacobianVectors(0.001);
+        mat pInv = getPseudoInv(jVectors);
+		
         vec nextParams = currParams - (pInv * currCost) * step;
         setParams(nextParams);
         vec nextCost = getCostDiff(goal);

@@ -48,23 +48,21 @@ const int COLOR_SCALE = 7;
 float GOAL_THETA = 0.0f;
 float GOAL_RADIUS = 0.5f;
 float GOAL_DIR = 1;
-float MAX_GOAL = 2.5;
+float MAX_GOAL = 3;
 glm::vec3 GOAL_CENTROID = glm::vec3(0.0f, 0.0f, 0.0f);
 int CYCLE_COMPLETED = 0;
 int NUM_CYCLES = 3;
 bool BEGIN_SPIRAL = false;
-bool DRAW_LINES = true;
-int TIME_TICKER = 0;
-int TIME_DELAY = 10;
+bool DRAW_LINES = false;
 
 
 float GOAL_SPEED = 100.0;
 
 // build link tree here
-Link startLink{1, {0}, 0, 
-    std::make_shared<Link>(Link{0.5, {0}, 0, 
-    std::make_shared<Link>(Link{0.25, {0}, 0,
-    std::make_shared<Link>(Link{0.13, {0}, 0})
+Link startLink{0.5, {0}, 0, 
+    std::make_shared<Link>(Link{1, {0}, 0, 
+    std::make_shared<Link>(Link{0.75, {0}, 0,
+    std::make_shared<Link>(Link{0.5, {0}, 0})
 })
 })
 };
@@ -73,7 +71,7 @@ struct Camera
 {
 	float theta = 0.0f;
 	float phi = 0.0f;
-	float dist = 5.0f;
+	float dist = 20.0f;
 };
 
 Camera CAMERA;
@@ -91,39 +89,33 @@ float COLOR_PALETTE[PALETTE_SIZE][4] ={
 
 void updateGoal()
 {
-	TIME_TICKER++;
-	cout << TIME_TICKER << endl;
-	
-	if (TIME_TICKER == TIME_DELAY)
-	{
-		TIME_TICKER = 0;
+
 		
-		GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
-		GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
-		
-		if (GOAL_THETA >= 360.0f)
-		{
-			GOAL_THETA = 0.0f;
-			CYCLE_COMPLETED++;
-			
-			if(!BEGIN_SPIRAL && CYCLE_COMPLETED >= NUM_CYCLES)
-			{
-				BEGIN_SPIRAL = true;
-			}
-		}
-		else if (GOAL_THETA < 0)
-		{
-			GOAL_THETA += 360.0f;
-		}
-		if (GOAL_RADIUS <= 0)
-		{
-			GOAL_DIR = -1;
-		}
-		if (GOAL_RADIUS >= MAX_GOAL)
-		{
-			GOAL_DIR = 1;
-		}
-	}
+    GOAL_THETA += 0.1f * GOAL_SPEED * GOAL_DIR;
+    GOAL_RADIUS -= 0.0001 * BEGIN_SPIRAL * GOAL_DIR * GOAL_SPEED;
+
+    if (GOAL_THETA >= 360.0f)
+    {
+    	GOAL_THETA = 0.0f;
+    	CYCLE_COMPLETED++;
+    	
+    	if(!BEGIN_SPIRAL && CYCLE_COMPLETED >= NUM_CYCLES)
+    	{
+    		BEGIN_SPIRAL = true;
+    	}
+    }
+    else if (GOAL_THETA < 0)
+    {
+    	GOAL_THETA += 360.0f;
+    }
+    if (GOAL_RADIUS <= 0)
+    {
+    	GOAL_DIR = -1;
+    }
+    if (GOAL_RADIUS >= MAX_GOAL)
+    {
+    	GOAL_DIR = 1;
+    }
 	
 }
 
@@ -148,7 +140,7 @@ Vector getGoal()
 	//cout << GOAL_THETA << ", " << GOAL_RADIUS << endl;
 
 	
-	glm::vec4 goal = glm::vec4(0.0, 0.0, -2.0, 1.0);
+	glm::vec4 goal = glm::vec4(0.0, 0.0, 2.0, 1.0);
 	glm::mat4 transform = glm::mat4();
 	//cout << "Identity:" << endl;
 	
@@ -186,14 +178,14 @@ void drawGoal()
 
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[1]);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[1]);
-	glutSolidSphere(0.01, 100, 100);
+	glutSolidSphere(0.1, 100, 100);
 
 	glTranslatef( -goal_position.x, -goal_position.y, -goal_position.z);	
 
 }
 
 void myVertex3f (Vector p) {
-    Vector offset = {0, 0, -3};
+    Vector offset = {0, 0, 0};
     p = p + offset;
     glVertex3f(p.x, p.y, p.z);
 }
@@ -202,20 +194,20 @@ void drawLink(Vector origin, Vector end_point) {
 
 	if (!DRAW_LINES)
 	{
-		Vector offset = {0, 0, -3};
+		Vector offset = {0, 0, 0};
 		origin = origin + offset;
 		end_point = end_point + offset;
 		
 		float cone_height = (end_point - origin).mag();
 		Vector direction = (end_point - origin).norm();
-		Vector forward = {1, 0, 0};
+		Vector forward = {0, 0, 1};
 		
 		Vector axis_of_rotation = direction.cross(forward).norm();
 		float angle_of_rotation = float(radians_to_degrees(acos(direction.dot(forward))));
 		
-		float const base_diameter = 0.05f;
-		float const stack_count = 5;
-		float const slice_count = 5;
+		float const base_diameter = 0.1f;
+		float const stack_count = 50;
+		float const slice_count = 50;
 		
 		//Set color based on magnitude
 		//We would have more control if we had a link number
@@ -230,8 +222,8 @@ void drawLink(Vector origin, Vector end_point) {
 		// Need to switch to the materialfv style of defining colors.
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, COLOR_PALETTE[color_index]);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, COLOR_PALETTE[color_index]);
-		glutWireCone(base_diameter, cone_height, stack_count, slice_count);
-		glutWireSphere(base_diameter, stack_count, slice_count);
+		glutSolidCone(base_diameter, cone_height, stack_count, slice_count);
+		glutSolidSphere(base_diameter, stack_count, slice_count);
 		//Undo the transformation before exiting this function
 		//Transformations must be in REVERSE ORDER
 		glRotatef(angle_of_rotation, axis_of_rotation.x, axis_of_rotation.y, axis_of_rotation.z);

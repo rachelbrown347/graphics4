@@ -3,7 +3,7 @@
 #include <armadillo>
 using namespace arma;
 
-mat getPseudoInv(std::vector<Vector> jVectors) {
+mat getPseudoInv(std::vector<Vector>& jVectors) {
     int n = jVectors.size();
     mat J(3, n);
 
